@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import type { SmellMemory, Season, SmellType, Emotion } from '../utils/constants';
 import { SEASONS, SMELL_TYPES, EMOTIONS } from '../utils/constants';
 import type { MemoryInput } from '../store/memoryStore';
+import { useMemoryStore } from '../store/memoryStore';
 
 interface Props {
   isOpen: boolean;
@@ -30,6 +31,8 @@ const humidityTicks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 export default function MemoryModal({ isOpen, onClose, onSubmit, editingData }: Props) {
   const [form, setForm] = useState<MemoryInput>(defaultForm);
   const modalRef = useRef<HTMLDivElement>(null);
+  // 已有正式地点档案：输入时可直接选用，避免少写一个字又拆出新档案
+  const locations = useMemoryStore((s) => s.locations);
 
   useEffect(() => {
     if (isOpen) {
@@ -109,11 +112,22 @@ export default function MemoryModal({ isOpen, onClose, onSubmit, editingData }: 
                 <input
                   type="text"
                   required
+                  list="location-archive-options"
                   value={form.location}
                   onChange={(e) => update('location', e.target.value)}
                   placeholder="例如：外婆家的老衣柜"
                   className="scent-input"
                 />
+                <datalist id="location-archive-options">
+                  {locations.map((l) => (
+                    <option key={l.id} value={l.name} />
+                  ))}
+                </datalist>
+                {locations.length > 0 && (
+                  <p className="mt-1 text-[11px] text-ink-700/50">
+                    名字与已有档案一致时会自动并入，不会新建重复档案
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">气味来源猜测</label>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import FilterPanel from '../components/FilterPanel';
 import VisualizationPanel from '../components/VisualizationPanel';
@@ -19,6 +20,7 @@ const defaultFilters: Filters = {
 
 export default function Home() {
   const { memories, initIfEmpty, addMemory, updateMemory, deleteMemory } = useMemoryStore();
+  const routerLocation = useLocation();
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -27,6 +29,14 @@ export default function Home() {
   useEffect(() => {
     initIfEmpty();
   }, [initIfEmpty]);
+
+  // 从地点档案页点击「封存一段气味」跳回时，自动打开表单
+  useEffect(() => {
+    if ((routerLocation.state as { openAdd?: boolean } | null)?.openAdd) {
+      setEditing(null);
+      setModalOpen(true);
+    }
+  }, [routerLocation.state]);
 
   const filteredMemories = useMemo(
     () => filterMemories(memories, filters),

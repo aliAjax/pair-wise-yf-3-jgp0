@@ -1,7 +1,15 @@
-import type { SmellMemory } from './constants';
+import type { SmellMemory, LocationArchive } from './constants';
 
 export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
+}
+
+/**
+ * 标准化地点名称：去掉首尾空白、把内部连续空白压成一个。
+ * 多敲的空格不会再把同一个地点拆成两份档案（真正少写了字仍是不同名字，需要手动整理）。
+ */
+export function normalizeLocationName(name: string): string {
+  return name.trim().replace(/\s+/g, ' ');
 }
 
 export function formatDate(iso: string): string {
@@ -12,6 +20,56 @@ export function formatDate(iso: string): string {
   const hh = String(d.getHours()).padStart(2, '0');
   const mm = String(d.getMinutes()).padStart(2, '0');
   return `${y}.${m}.${day} ${hh}:${mm}`;
+}
+
+/** 相对时间：刚刚 / N 分钟前 / N 小时前 / N 天前 / N 个月前 / N 年前 */
+export function formatRelativeDate(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const minute = 60_000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+  if (diff < minute) return '刚刚';
+  if (diff < hour) return `${Math.floor(diff / minute)} 分钟前`;
+  if (diff < day) return `${Math.floor(diff / hour)} 小时前`;
+  if (diff < 30 * day) return `${Math.floor(diff / day)} 天前`;
+  if (diff < 365 * day) return `${Math.floor(diff / (30 * day))} 个月前`;
+  return `${Math.floor(diff / (365 * day))} 年前`;
+}
+
+export interface LocationStats {
+  count: number;
+  averageIntensity: number;
+  /** 最近一次封存时间（取旗下记忆 created_at 的最大值） */
+  latestSealedAt: string | null;
+}
+
+/** 档案统计全部从旗下记忆实时派生：记忆换到别处后数字立刻重算 */
+export function getLocationStats(memories: SmellMemory[]): LocationStats {
+  if (!memories.length) {
+    return { count: 0, averageIntensity: 0, latestSealedAt: null };
+  }
+  return {
+    count: memories.length,
+    averageIntensity: getAverageIntensity(memories),
+    latestSealedAt: memories.reduce(
+      (max, m) => (m.created_at > max ? m.created_at : max),
+      memories[0].created_at,
+    ),
+  };
+}
+
+/** 按记忆数降序、再按最近封存时间降序排列档案 */
+export function sortLocations(
+  locations: LocationArchive[],
+  statsById: Map<string, LocationStats>,
+): LocationArchive[] {
+  return [...locations].sort((a, b) => {
+    const sa = statsById.get(a.id);
+    const sb = statsById.get(b.id);
+    const diff = (sb?.count ?? 0) - (sa?.count ?? 0);
+    if (diff !== 0) return diff;
+    return (sb?.latestSealedAt ?? '').localeCompare(sa?.latestSealedAt ?? '');
+  });
 }
 
 export interface Filters {

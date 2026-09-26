@@ -41,9 +41,16 @@ export default function MemoryCard({ memory, index, isExpanded, onToggle, onEdit
           >
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="min-w-0 flex-1">
-                <h3 className="font-serif text-xl font-semibold text-ink-800 leading-tight truncate">
-                  {memory.location}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-serif text-xl font-semibold text-ink-800 leading-tight truncate">
+                    {memory.location}
+                  </h3>
+                  {memory.location_id === null && (
+                    <span className="shrink-0 scent-tag bg-paper-200 text-ink-700/70 border border-paper-300" title="所属地点档案已被撤下，可在地点档案页重新归类">
+                      📦 未归类
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-ink-700/70 mt-0.5 truncate">
                   <span className="mr-1" style={{ color: stype.color }}>{stype.emoji}</span>
                   {memory.source_guess}

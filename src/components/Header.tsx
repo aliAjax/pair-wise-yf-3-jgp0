@@ -1,9 +1,15 @@
 import { Plus } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 
 interface Props {
   onAdd: () => void;
   memoryCount: number;
 }
+
+const tabs = [
+  { to: '/', label: '气味档案', emoji: '📚', end: true },
+  { to: '/locations', label: '地点档案', emoji: '🗺️', end: false },
+];
 
 export default function Header({ onAdd, memoryCount }: Props) {
   return (
@@ -43,7 +49,27 @@ export default function Header({ onAdd, memoryCount }: Props) {
             <span className="font-serif text-lg">封存一段气味</span>
           </button>
         </div>
-        <div className="mt-8 h-px w-full" style={{ background: 'linear-gradient(90deg, transparent 0%, #CBB993 20%, #CBB993 80%, transparent 100%)' }} />
+
+        <nav className="mt-7 flex items-center gap-2">
+          {tabs.map((t) => (
+            <NavLink
+              key={t.to}
+              to={t.to}
+              end={t.end}
+              className={({ isActive }) =>
+                `inline-flex items-center gap-2 px-4 py-2 rounded-t-xl text-sm font-hand text-lg border-x border-t transition-all duration-200 ${
+                  isActive
+                    ? 'bg-paper-50/80 border-paper-300 text-ochre-600 -mb-px shadow-[0_-4px_12px_rgba(92,58,29,0.06)]'
+                    : 'bg-paper-200/50 border-transparent text-ink-700/60 hover:text-ochre-600 hover:bg-paper-100/70'
+                }`
+              }
+            >
+              <span>{t.emoji}</span>
+              {t.label}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent 0%, #CBB993 20%, #CBB993 80%, transparent 100%)' }} />
       </div>
     </header>
   );
