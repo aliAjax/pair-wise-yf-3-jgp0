@@ -1,11 +1,23 @@
-import type { SmellMemory } from '../utils/constants';
+import type { SmellMemory, LocationArchive } from '../utils/constants';
 
 const now = Date.now();
 const daysAgo = (d: number) => new Date(now - d * 86400000).toISOString();
 
+export const mockLocationArchives: LocationArchive[] = [
+  { id: 'loc-001', name: '外婆家的老衣柜', created_at: daysAgo(42) },
+  { id: 'loc-002', name: '高中教室雨后的走廊', created_at: daysAgo(28) },
+  { id: 'loc-003', name: '大学图书馆五楼角落', created_at: daysAgo(18) },
+  { id: 'loc-004', name: '爷爷的中药铺', created_at: daysAgo(60) },
+  { id: 'loc-005', name: '第一次租的房子的厨房', created_at: daysAgo(100) },
+  { id: 'loc-006', name: '春天公园的樱花树下', created_at: daysAgo(15) },
+  { id: 'loc-007', name: '老小区的楼道', created_at: daysAgo(5) },
+  { id: 'loc-008', name: '童年的海边', created_at: daysAgo(3) },
+];
+
 export const mockMemories: SmellMemory[] = [
   {
     id: 'mock-001',
+    locationId: 'loc-001',
     location: '外婆家的老衣柜',
     source_guess: '陈年樟木 + 旧毛衣',
     intensity: 7,
@@ -21,6 +33,7 @@ export const mockMemories: SmellMemory[] = [
   },
   {
     id: 'mock-002',
+    locationId: 'loc-002',
     location: '高中教室雨后的走廊',
     source_guess: '湿润的水泥地 + 草地腥气',
     intensity: 5,
@@ -36,6 +49,7 @@ export const mockMemories: SmellMemory[] = [
   },
   {
     id: 'mock-003',
+    locationId: 'loc-003',
     location: '大学图书馆五楼角落',
     source_guess: '旧纸张 + 某个人的香水',
     intensity: 4,
@@ -51,6 +65,7 @@ export const mockMemories: SmellMemory[] = [
   },
   {
     id: 'mock-004',
+    locationId: 'loc-004',
     location: '爷爷的中药铺',
     source_guess: '甘草 + 陈皮 + 炮制过的草药',
     intensity: 9,
@@ -66,6 +81,7 @@ export const mockMemories: SmellMemory[] = [
   },
   {
     id: 'mock-005',
+    locationId: 'loc-005',
     location: '第一次租的房子的厨房',
     source_guess: '烧焦的米饭 + 抽油烟机的油污',
     intensity: 8,
@@ -81,6 +97,7 @@ export const mockMemories: SmellMemory[] = [
   },
   {
     id: 'mock-006',
+    locationId: 'loc-006',
     location: '春天公园的樱花树下',
     source_guess: '花瓣的甜味 + 青草 + 远处的棉花糖',
     intensity: 3,
@@ -96,6 +113,7 @@ export const mockMemories: SmellMemory[] = [
   },
   {
     id: 'mock-007',
+    locationId: 'loc-007',
     location: '老小区的楼道',
     source_guess: '谁家炖的红烧肉 + 消毒水',
     intensity: 6,
@@ -111,6 +129,7 @@ export const mockMemories: SmellMemory[] = [
   },
   {
     id: 'mock-008',
+    locationId: 'loc-008',
     location: '童年的海边',
     source_guess: '咸腥海风 + 晒过的泳衣塑料味',
     intensity: 8,

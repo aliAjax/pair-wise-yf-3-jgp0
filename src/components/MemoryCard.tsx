@@ -42,8 +42,13 @@ export default function MemoryCard({ memory, index, isExpanded, onToggle, onEdit
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="min-w-0 flex-1">
                 <h3 className="font-serif text-xl font-semibold text-ink-800 leading-tight truncate">
-                  {memory.location}
+                  {memory.location || '（未命名地点）'}
                 </h3>
+                {memory.locationId === null && (
+                  <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-paper-200 text-ink-700/70 text-[10px] font-medium">
+                    未归类
+                  </span>
+                )}
                 <p className="text-sm text-ink-700/70 mt-0.5 truncate">
                   <span className="mr-1" style={{ color: stype.color }}>{stype.emoji}</span>
                   {memory.source_guess}

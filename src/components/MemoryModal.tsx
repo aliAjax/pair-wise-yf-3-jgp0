@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { X } from 'lucide-react';
-import type { SmellMemory, Season, SmellType, Emotion } from '../utils/constants';
+import { X, MapPin, PlusCircle } from 'lucide-react';
+import type { SmellMemory, Season, SmellType, Emotion, LocationArchive } from '../utils/constants';
 import { SEASONS, SMELL_TYPES, EMOTIONS } from '../utils/constants';
 import type { MemoryInput } from '../store/memoryStore';
 
@@ -9,10 +9,14 @@ interface Props {
   onClose: () => void;
   onSubmit: (data: MemoryInput) => void;
   editingData: SmellMemory | null;
+  locations: LocationArchive[];
 }
+
+const NEW_ARCHIVE = '__new__';
 
 const defaultForm: MemoryInput = {
   location: '',
+  locationId: null,
   source_guess: '',
   intensity: 5,
   humidity: 5,
@@ -27,8 +31,10 @@ const defaultForm: MemoryInput = {
 const intensityTicks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const humidityTicks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-export default function MemoryModal({ isOpen, onClose, onSubmit, editingData }: Props) {
+export default function MemoryModal({ isOpen, onClose, onSubmit, editingData, locations }: Props) {
   const [form, setForm] = useState<MemoryInput>(defaultForm);
+  /** NEW_ARCHIVE 表示新建一个正式地点；否则为所选档案 id */
+  const [archiveChoice, setArchiveChoice] = useState<string>(NEW_ARCHIVE);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,9 +42,11 @@ export default function MemoryModal({ isOpen, onClose, onSubmit, editingData }: 
       if (editingData) {
         const { id, created_at, updated_at, ...rest } = editingData;
         void id; void created_at; void updated_at;
-        setForm(rest);
+        setForm({ ...rest, locationId: rest.locationId ?? null });
+        setArchiveChoice(rest.locationId ?? NEW_ARCHIVE);
       } else {
         setForm(defaultForm);
+        setArchiveChoice(NEW_ARCHIVE);
       }
       document.body.style.overflow = 'hidden';
     } else {
@@ -57,10 +65,28 @@ export default function MemoryModal({ isOpen, onClose, onSubmit, editingData }: 
     setForm((f) => ({ ...f, [key]: value }));
   };
 
+  const handleArchiveChoice = (choice: string) => {
+    setArchiveChoice(choice);
+    if (choice === NEW_ARCHIVE) {
+      // 新建：清空所选档案，等待输入正式名称
+      update('locationId', null);
+    } else {
+      const target = locations.find((a) => a.id === choice);
+      update('locationId', choice);
+      if (target) update('location', target.name);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.location.trim()) return;
-    onSubmit(form);
+    const payload: MemoryInput = {
+      ...form,
+      // 选择已有档案时以档案 id 为准；新建时交给 store 建档
+      locationId: archiveChoice === NEW_ARCHIVE ? null : form.locationId,
+      location: form.location.trim(),
+    };
+    if (!payload.location) return;
+    onSubmit(payload);
     onClose();
   };
 
@@ -104,18 +130,46 @@ export default function MemoryModal({ isOpen, onClose, onSubmit, editingData }: 
               <h3 className="font-hand text-xl text-ochre-600">基础信息</h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">地点 *</label>
-                <input
-                  type="text"
-                  required
-                  value={form.location}
-                  onChange={(e) => update('location', e.target.value)}
-                  placeholder="例如：外婆家的老衣柜"
-                  className="scent-input"
-                />
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">
+                  地点档案 *
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative sm:w-56 shrink-0">
+                    <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ochre-500 pointer-events-none" />
+                    <select
+                      value={archiveChoice}
+                      onChange={(e) => handleArchiveChoice(e.target.value)}
+                      className="scent-select pl-9 w-full cursor-pointer"
+                    >
+                      <option value={NEW_ARCHIVE}>＋ 新建地点档案</option>
+                      {locations.map((a) => (
+                        <option key={a.id} value={a.id} className="bg-paper-50 text-ink-800">
+                          {a.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={form.location}
+                    onChange={(e) => update('location', e.target.value)}
+                    disabled={archiveChoice !== NEW_ARCHIVE}
+                    placeholder={
+                      archiveChoice === NEW_ARCHIVE
+                        ? '输入正式地点名称，例如：外婆家的老衣柜'
+                        : '已归入上方所选档案'
+                    }
+                    className="scent-input flex-1 disabled:bg-paper-100 disabled:text-ink-700/60 disabled:cursor-not-allowed"
+                  />
+                </div>
+                <p className="text-[11px] text-ink-700/50 mt-1.5 flex items-center gap-1">
+                  <PlusCircle className="w-3 h-3" />
+                  同一个地点请始终选择同一份档案，避免少写一个字就被拆成两处
+                </p>
               </div>
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">气味来源猜测</label>
                 <input
                   type="text"

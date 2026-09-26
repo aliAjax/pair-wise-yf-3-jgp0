@@ -18,7 +18,7 @@ const defaultFilters: Filters = {
 };
 
 export default function Home() {
-  const { memories, initIfEmpty, addMemory, updateMemory, deleteMemory } = useMemoryStore();
+  const { memories, locations, initIfEmpty, addMemory, updateMemory, deleteMemory } = useMemoryStore();
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -51,7 +51,7 @@ export default function Home() {
 
   const handleDelete = (id: string) => {
     const target = memories.find((m) => m.id === id);
-    const msg = `确认删除「${target?.location ?? '这段记忆'}」吗？`;
+    const msg = `确认删除「${target?.source_guess || target?.location || '这段记忆'}」这段记忆吗？此操作只会移除记忆本身，不影响它所属的地点档案。`;
     if (window.confirm(msg)) {
       deleteMemory(id);
       if (expandedId === id) setExpandedId(null);
@@ -68,7 +68,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <Header onAdd={openAddModal} memoryCount={memories.length} />
+      <Header onAdd={openAddModal} memoryCount={memories.length} locationCount={locations.length} />
 
       <main className="container max-w-6xl pb-20">
         <FilterPanel
@@ -143,6 +143,7 @@ export default function Home() {
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
         editingData={editing}
+        locations={locations}
       />
     </div>
   );

@@ -5,6 +5,8 @@ export type Emotion = 'warm' | 'nostalgic' | 'peaceful' | 'melancholy' | 'joyful
 export interface SmellMemory {
   id: string;
   location: string;
+  /** 所属正式地点档案；null 表示未归类（地点档案被撤下或地名留空时退回此状态） */
+  locationId: string | null;
   source_guess: string;
   intensity: number;
   humidity: number;
@@ -16,6 +18,13 @@ export interface SmellMemory {
   want_again: boolean;
   created_at: string;
   updated_at: string;
+}
+
+/** 正式地点档案：同一个地点只有唯一一份，记忆通过 locationId 归属其下 */
+export interface LocationArchive {
+  id: string;
+  name: string;
+  created_at: string;
 }
 
 export const SEASONS: { value: Season; label: string; emoji: string }[] = [
